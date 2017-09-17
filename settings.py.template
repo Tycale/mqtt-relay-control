@@ -1,0 +1,11 @@
+DEBUG=1
+MQTT_HOST=<string>
+MQTT_PORT=<int>
+MQTT_USER=<string>
+MQTT_PASS=<string>
+MQTT_TOPIC=<string>
+ACCESSORY_NAME=<string>
+SERVICE_NAME=<string>
+RELAY=1
+
+RELAY_TO_PIN = {1: 26, 2: 20, 3: 21}
