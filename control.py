@@ -95,6 +95,7 @@ class VentilationUnit:
         if self.timer:
             logger.info("Cancelling off Timer")
             self.timer.cancel()
+            self.timer = None
 
         logger.debug("Sending MQTT OFF message")
         self.mqtt_client.publish("{}/to/set".format(Settings.MQTT_TOPIC),
