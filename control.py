@@ -8,7 +8,6 @@ import RPi.GPIO as GPIO
 
 import settings as Settings
 
-
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -29,27 +28,25 @@ class VentilationUnit:
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(Settings.RELAY_TO_PIN[self.relay], GPIO.OUT)
 
-
     @property
     def mqtt_message(self):
-        return { 'name': Settings.ACCESSORY_NAME,
-                 'service_name': Settings.SERVICE_NAME,
-                 'characteristic': 'On',
-                 'value': self.turned_on }
-
+        return {
+            'name': Settings.ACCESSORY_NAME,
+            'service_name': Settings.SERVICE_NAME,
+            'characteristic': 'On',
+            'value': self.turned_on
+        }
 
     def request_device(self):
-        request_accessory_dict = { 'name': Settings.ACCESSORY_NAME }
+        request_accessory_dict = {'name': Settings.ACCESSORY_NAME}
         request_accessory_response = self.mqtt_client.publish(
             "{}/to/get".format(Settings.MQTT_TOPIC),
             json.dumps(request_accessory_dict))
-
 
     def check_device(self, message):
         if 'message' in message:
             if 'undefined' in message['message']:
                 self.add_device()
-
 
     def add_device(self):
         logger.info("Adding Accessory")
@@ -79,13 +76,13 @@ class VentilationUnit:
 
         timer_seconds = Settings.TIMER_MINUTES * 60
         self.timer = Timer(timer_seconds, self.turn_off)
-        logger.info("Starting timer for {} minutes".format(Settings.TIMER_MINUTES))
+        logger.info(
+            "Starting timer for {} minutes".format(Settings.TIMER_MINUTES))
         self.timer.start()
 
         logger.debug("Sending MQTT ON message")
         self.mqtt_client.publish("{}/to/set".format(Settings.MQTT_TOPIC),
-                                     json.dumps(self.mqtt_message))
-
+                                 json.dumps(self.mqtt_message))
 
     def turn_off(self):
         logger.info("Turning OFF relay {}".format(self.relay))
@@ -99,7 +96,7 @@ class VentilationUnit:
 
         logger.debug("Sending MQTT OFF message")
         self.mqtt_client.publish("{}/to/set".format(Settings.MQTT_TOPIC),
-                                      json.dumps(self.mqtt_message))
+                                 json.dumps(self.mqtt_message))
 
 
 def on_connect(client, userdata, flags, rc):
@@ -116,7 +113,7 @@ def on_message(client, userdata, msg):
         else:
             userdata['ventilation'].turn_off()
     elif msg.topic == "{}/from/response/{}".format(Settings.MQTT_TOPIC,
-                                            Settings.ACCESSORY_NAME):
+                                                   Settings.ACCESSORY_NAME):
         userdata['ventilation'].check_device(json.loads(msg.payload.decode()))
 
 
