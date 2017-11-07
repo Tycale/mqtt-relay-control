@@ -1,0 +1,18 @@
+{
+    "debug": true,
+    "switches": [
+        {
+            "accessory_name": "name-of-accessory",
+            "service_name": "Easy Display Name",
+            "pin": 26,
+            "timeout": 30
+        }
+    ],
+    "mqtt": {
+        "host": "hostname",
+        "port": 1234,
+        "username": "user",
+        "password": "p4ss",
+        "topic": "general_topic"
+    }
+}
