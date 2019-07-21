@@ -4,7 +4,7 @@
         {
             "accessory_name": "name-of-accessory",
             "service_name": "Easy Display Name",
-            "pin": 26,
+            "pin": [26],
             "timeout": 30
         }
     ],

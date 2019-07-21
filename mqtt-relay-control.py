@@ -18,22 +18,23 @@ class MQTTRelay:
                  mqtt_topic,
                  accessory_name,
                  service_name,
-                 pin,
+                 pins,
                  timeout=False):
         self.mqtt_client = mqtt_client
         self.mqtt_topic = mqtt_topic
         self.accessory_name = accessory_name
         self.service_name = service_name
-        self.pin = pin
+        self.pins = pins
         self.timeout = timeout
 
         self.turned_on = False
         self.timer = None
 
-        logger.debug("Setting up Relay GPIO on pin {}".format(self.pin))
+        logger.debug("Setting up Relay GPIO on pins {}".format(self.pins))
         GPIO.setwarnings(False)
         GPIO.setmode(GPIO.BCM)
-        GPIO.setup(self.pin, GPIO.OUT)
+        for pin in self.pins:
+            GPIO.setup(pin, GPIO.OUT)
 
     @property
     def mqtt_message(self):
@@ -95,8 +96,9 @@ class MQTTRelay:
             json.dumps(remove_accessory_dict))
 
     def turn_on(self):
-        logger.info("Turning ON relay on pin {}".format(self.pin))
-        GPIO.output(self.pin, GPIO.LOW)
+        logger.info("Turning ON relay on pins {}".format(self.pins))
+        for pin in self.pins:
+            GPIO.output(pin, GPIO.LOW)
         self.turned_on = True
 
         if self.timeout:
@@ -110,8 +112,9 @@ class MQTTRelay:
                                  json.dumps(self.mqtt_message))
 
     def turn_off(self):
-        logger.info("Turning OFF relay on pin {}".format(self.pin))
-        GPIO.output(self.pin, GPIO.HIGH)
+        logger.info("Turning OFF relay on pins {}".format(self.pins))
+        for pin in self.pins:
+            GPIO.output(pin, GPIO.HIGH)
         self.turned_on = False
 
         if self.timer:
