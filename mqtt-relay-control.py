@@ -19,23 +19,29 @@ class MQTTRelay:
                  accessory_name,
                  service_name,
                  pins,
+                 initial=None,
+                 inverted=False,
                  timeout=False):
         self.mqtt_client = mqtt_client
         self.mqtt_settings = mqtt_settings
         self.mqtt_topic = mqtt_settings['topic']
+        self.inverted = inverted
         self.accessory_name = accessory_name
         self.service_name = service_name
         self.pins = pins
         self.timeout = timeout
+        self.initial = initial
 
         self.turned_on = False
         self.timer = None
 
-        logger.debug("Setting up Relay GPIO on pins {}".format(self.pins))
+        logger.debug("Setting up Relay GPIO on pins {}, inverted: {}, initial: {}".format(self.pins, self.inverted, self.initial))
         GPIO.setwarnings(False)
         GPIO.setmode(GPIO.BCM)
         for pin in self.pins:
             GPIO.setup(pin, GPIO.OUT)
+            if self.initial != None :
+                GPIO.output(pin, initial)
 
     @property
     def mqtt_message(self):
@@ -100,7 +106,7 @@ class MQTTRelay:
     def turn_on(self):
         logger.info("Turning ON relay on pins {}".format(self.pins))
         for pin in self.pins:
-            GPIO.output(pin, GPIO.LOW)
+            GPIO.output(pin, GPIO.LOW ^ self.inverted)
         self.turned_on = True
 
         if self.timeout:
@@ -115,7 +121,7 @@ class MQTTRelay:
     def turn_off(self):
         logger.info("Turning OFF relay on pins {}".format(self.pins))
         for pin in self.pins:
-            GPIO.output(pin, GPIO.HIGH)
+            GPIO.output(pin, GPIO.HIGH ^ self.inverted)
         self.turned_on = False
 
         if self.timer:
