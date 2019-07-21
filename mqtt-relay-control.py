@@ -15,13 +15,14 @@ logger.setLevel(logging.WARNING)
 class MQTTRelay:
     def __init__(self,
                  mqtt_client,
-                 mqtt_topic,
+                 mqtt_settings,
                  accessory_name,
                  service_name,
                  pins,
                  timeout=False):
         self.mqtt_client = mqtt_client
-        self.mqtt_topic = mqtt_topic
+        self.mqtt_settings = mqtt_settings
+        self.mqtt_topic = mqtt_settings['topic']
         self.accessory_name = accessory_name
         self.service_name = service_name
         self.pins = pins
@@ -108,8 +109,7 @@ class MQTTRelay:
             self.timer.start()
 
         logger.debug("Sending MQTT ON message")
-        self.mqtt_client.publish("{}/to/set".format(self.mqtt_topic),
-                                 json.dumps(self.mqtt_message))
+        self.update_mqtt_state()
 
     def turn_off(self):
         logger.info("Turning OFF relay on pins {}".format(self.pins))
@@ -123,8 +123,16 @@ class MQTTRelay:
             self.timer = None
 
         logger.debug("Sending MQTT OFF message")
-        self.mqtt_client.publish("{}/to/set".format(self.mqtt_topic),
+        self.update_mqtt_state()
+
+    def update_mqtt_state(self):
+        if self.mqtt_settings['homebridge_protocol']:
+            self.mqtt_client.publish("{}/to/set".format(self.mqtt_topic),
                                  json.dumps(self.mqtt_message))
+        if self.mqtt_settings['plain_mqtt']:
+            msg_state = "ON" if self.turned_on else "OFF"
+            self.mqtt_client.publish("{}/state/{}".format(self.mqtt_topic,
+                self.accessory_name), msg_state)
 
 
 def on_connect(client, userdata, flags, rc):
@@ -208,7 +216,7 @@ def main():
     logger.debug("Creating MQTT Relay object(s)")
     relays = []
     for switch in settings['switches']:
-        relay_obj = MQTTRelay(client, settings['mqtt']['topic'], **switch)
+        relay_obj = MQTTRelay(client, settings['mqtt'], **switch)
         relays.append(relay_obj)
     client.user_data_set({'relays': relays, 'mqtt': settings['mqtt']})
 
