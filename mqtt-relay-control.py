@@ -47,10 +47,11 @@ class MQTTRelay:
         }
 
     def request_device(self):
-        request_accessory_dict = {'name': self.accessory_name}
-        request_accessory_response = self.mqtt_client.publish(
-            "{}/to/get".format(self.mqtt_topic),
-            json.dumps(request_accessory_dict))
+        if self.mqtt_settings['homebridge_protocol']:
+            request_accessory_dict = {'name': self.accessory_name}
+            request_accessory_response = self.mqtt_client.publish(
+                "{}/to/get".format(self.mqtt_topic),
+                json.dumps(request_accessory_dict))
 
     def check_device(self, message):
         if 'message' in message:
