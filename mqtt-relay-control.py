@@ -132,6 +132,21 @@ def on_connect(client, userdata, flags, rc):
 
 
 def on_message(client, userdata, msg):
+    if userdata['mqtt']['homebridge_protocol']:
+        on_message_homebridge(client, userdata, msg)
+    if userdata['mqtt']['plain_mqtt']:
+        on_message_plain(client, userdata, msg)
+
+def on_message_plain(client, userdata, msg):
+    prefix, action, accessory_name = msg.topic.split('/')
+    if action == 'command' :
+        relay_index = find_relay_index(accessory_name, userdata)
+        if "on" in msg.payload.lower():
+            userdata['relays'][relay_index].turn_on()
+        else:
+            userdata['relays'][relay_index].turn_off()
+
+def on_message_homebridge(client, userdata, msg):
     action_for_accessory = check_action_for_accessory(msg.topic, userdata)
     if action_for_accessory:
         relay_index = find_relay_index(action_for_accessory[1], userdata)

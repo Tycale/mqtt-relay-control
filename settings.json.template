@@ -13,6 +13,8 @@
         "port": 1234,
         "username": "user",
         "password": "p4ss",
-        "topic": "general_topic"
+        "topic": "general_topic",
+        "homebridge_protocol": true,
+        "plain_mqtt": true
     }
 }
